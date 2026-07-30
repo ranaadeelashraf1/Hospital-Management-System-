@@ -1,0 +1,401 @@
+/* Navbar start */
+.top-contact-bar {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 6px 20px;
+  font-size: 0.9rem;
+}
+
+.top-contact-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.top-contact-content span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-contact-content i {
+  color: #8ec5ff;
+}
+
+.navBar1 {
+  background: linear-gradient(90deg, #ffffff 0%, #f7fbff 100%);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.55), 0 2px 8px rgba(15, 23, 42, 0.08);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.fullNav {
+  height: 68px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.list1 {
+  gap: 42px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+  list-style: none;
+  font-size: 16.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.navBar1 i,
+.navBar2 i {
+  /* color: rgb(48, 61, 203); */
+  color: #2a2a72;
+  background-image: linear-gradient(315deg, #2a2a72 0%, #243fe9 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.list1 a {
+  text-decoration: none;
+  color: #1f2d3d;
+  transition: all 0.25s ease;
+  padding: 6px 0;
+  position: relative;
+}
+
+.list1 a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(315deg, #2a2a72 0%, #243fe9 90%);
+  transition: width 0.25s ease;
+}
+
+.list1 a:hover::after {
+  width: 100%;
+}
+.logo {
+  text-align: center;
+  margin-left: 3px;
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 36px;
+  max-height: 40px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  display: block;
+}
+.list1 a:hover,
+.list2 a:hover {
+  color: #2a2a72;
+  background-image: linear-gradient(315deg, #2a2a72 0%, #243fe9 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.drop1,
+.drop2 {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  z-index: 1;
+  opacity: 95%;
+}
+
+.empty {
+  height: 20px;
+}
+
+.non-empty {
+  background-color: white;
+  border: 1.5px solid rgba(128, 128, 128, 0.395);
+  padding: 10px;
+  border-radius: 5px;
+  opacity: 95%;
+}
+
+.drop1 a,
+.drop2 a {
+  text-decoration: none;
+  color: rgb(48, 48, 48);
+}
+
+.drop1 li,
+.drop2 li {
+  list-style: none;
+  padding: 7px;
+  border-radius: 5px;
+}
+
+.drop1 li:hover,
+.drop2 li:hover {
+  background-color: rgba(225, 225, 225, 0.811);
+}
+
+#services:hover #up-key1 {
+  display: block;
+}
+
+#services:hover #down-key1 {
+  display: none;
+}
+
+#repair:hover #up-key2 {
+  display: block;
+}
+
+#repair:hover #down-key2 {
+  display: none;
+}
+
+#services:hover,
+#repair:hover {
+  color: blue;
+  cursor: pointer;
+}
+
+#services:hover .drop1 {
+  display: block;
+}
+
+#repair:hover .drop2 {
+  display: block;
+}
+
+#bt2 {
+  display: none;
+  padding: 19px;
+}
+
+#bt2 button {
+  /* ensure large tappable area and clear contrast */
+  min-width: 44px;
+  min-height: 44px;
+  width: auto;
+  height: auto;
+  padding: 8px;
+  cursor: pointer;
+  border: 2px solid rgba(42,42,114,0.12);
+  border-radius: 8px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#bt2 i {
+  font-size: 22px;
+  color: #2a2a72; /* match logo/nav color for contrast */
+}
+
+#mobNavParent {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* semi-transparent backdrop behind mobile menu */
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+}
+
+.navBar2 {
+  text-align: center;
+  background-color: white;
+  padding: 10px 0;
+  width: 100vw;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1001;
+  display: none;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navBar2 pre {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navOpen {
+  animation-name: mobNav;
+  animation-duration: 1s;
+}
+
+.navClose {
+  animation-name: mobNav2;
+  animation-duration: 1s;
+}
+
+.list2 {
+  list-style: none;
+  font-size: 16.5px;
+}
+
+.list2 li {
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
+
+.list2 a {
+  text-decoration: none;
+  display: block;
+  color: black;
+}
+
+.drop3,
+.drop4 {
+  display: none;
+  list-style: none;
+  width: 50%;
+  margin: auto;
+}
+
+.drop3 ul,
+.drop4 ul {
+  list-style: none;
+  border: 1.5px solid gray;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.drop3 li,
+.drop4 li {
+  border-radius: 5px;
+}
+
+.drop3 li:hover,
+.drop4 li:hover {
+  background-color: rgba(225, 225, 225, 0.811);
+}
+
+/* Desktop / tablet landscape: show horizontal nav, hide mobile nav and hamburger */
+@media (min-width: 768px) {
+  /* Force-hide mobile controls on desktop/tablet widths */
+  /* Use a more specific selector so the hamburger is fully hidden on desktop */
+  .navBar1 #bt2,
+  .navBar1 #bt2 button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .list1 {
+    display: flex !important;
+  }
+
+  .navBar2 {
+    display: none !important;
+  }
+}
+
+/* Explicit hamburger button class to target the actual button element */
+.hamburgerBtn {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  /* Hide the actual hamburger button on desktop */
+  .hamburgerBtn {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Mobile: hide horizontal nav, show hamburger */
+@media (max-width: 767px) {
+  .list1 {
+    display: none;
+  }
+  #bt2 {
+    display: block;
+    /* keep hamburger visible above mobile menu */
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 1002;
+  }
+  .fullNav {
+    padding: 0 15px;
+  }
+}
+
+@media (max-width: 767px) {
+.top-contact-bar {
+    padding: 4px 8px;
+  }
+.top-contact-content {
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    flex-wrap: nowrap;
+  }
+.fullNav {
+    height: 64px;
+    padding: 0 10px;
+  }
+.navBar2 {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+.logoImg {
+    height: 34px;
+  }
+.navBar2 {
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+.list2 {
+    padding: 0 20px;
+  }
+.drop3,
+  .drop4 {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+.logoImg {
+    height: 28px;
+  }
+.fullNav {
+    height: auto;
+    padding: 10px 12px;
+  }
+.list2 {
+    font-size: 14px;
+    padding: 0 10px;
+  }
+.drop3,
+  .drop4 {
+    width: 100%;
+    margin: 0 auto;
+  }
+}
