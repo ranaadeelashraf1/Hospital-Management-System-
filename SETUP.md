@@ -79,5 +79,7 @@ Full frontend details: `frontend/README.md`.
   matching feature yet (dark mode toggle, password-change forms, the notification bell's contents,
   the Reports page charts). These are called out in `frontend/README.md` under "What's connected
   to the real backend" along with what you'd need to add to wire them up.
+- Public registration creates patient accounts only. Doctor, Admin, and Receptionist accounts must
+  be created by an authenticated Admin through `POST /api/auth/admin/users`; other roles receive `403 Forbidden`.
 - Registration sends a welcome email when SMTP is configured. The login screen's Forgot password
   link sends a one-hour reset link, and each reset token can only be used once.

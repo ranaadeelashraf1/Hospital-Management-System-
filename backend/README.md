@@ -109,8 +109,9 @@ Authorization: Bearer <token>
 ### Auth
 | Method | Route              | Access | Description |
 |--------|---------------------|--------|--------------|
-| POST   | `/api/auth/register` | Public | Create account (role: PATIENT/DOCTOR/RECEPTIONIST) |
+| POST   | `/api/auth/register` | Public | Create a patient account; role is always forced to `PATIENT` |
 | POST   | `/api/auth/login`    | Public | Returns JWT + user |
+| POST   | `/api/auth/admin/users` | Admin | Create `ADMIN`, `DOCTOR`, or `RECEPTIONIST` accounts |
 | POST   | `/api/auth/forgot-password` | Public | Emails a one-hour password reset link |
 | POST   | `/api/auth/reset-password` | Public | Sets a new password using a one-time token |
 | GET    | `/api/auth/me`       | Any    | Current logged-in user's profile |

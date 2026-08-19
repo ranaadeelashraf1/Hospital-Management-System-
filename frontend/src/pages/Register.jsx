@@ -1,30 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, Lock, ArrowRight, HeartPulse, Stethoscope, ClipboardList } from "lucide-react";
+import { User, Mail, Phone, Lock, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import Logo from "../components/ui/Logo";
 import { Field, Input, Select } from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import { useAuth, roleHome } from "../context/AuthContext";
 
-const roles = [
-  { id: "Patient", value: "PATIENT", icon: HeartPulse },
-  { id: "Doctor", value: "DOCTOR", icon: Stethoscope },
-  { id: "Receptionist", value: "RECEPTIONIST", icon: ClipboardList },
-];
-
 export default function Register() {
-  const [role, setRole] = useState("Patient");
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    name: "", email: "", phone: "", password: "", confirmPassword: "",
-    age: "", gender: "FEMALE", specialization: "", experienceYears: "",
+    name: "", email: "", phone: "", password: "", confirmPassword: "", age: "", gender: "FEMALE",
   });
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const roleValue = roles.find((r) => r.id === role).value;
   const update = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
   const handleSubmit = async (e) => {
@@ -40,12 +31,8 @@ export default function Register() {
         email: form.email,
         phone: form.phone,
         password: form.password,
-        role: roleValue,
-        ...(roleValue === "PATIENT" && { age: Number(form.age) || 0, gender: form.gender }),
-        ...(roleValue === "DOCTOR" && {
-          specialization: form.specialization || "General Physician",
-          experienceYears: Number(form.experienceYears) || 0,
-        }),
+        age: Number(form.age),
+        gender: form.gender,
       };
       const newUser = await register(payload);
       toast.success("Account created successfully!");
@@ -97,25 +84,9 @@ export default function Register() {
             <p className="text-ink-500 text-sm mt-1.5 mb-6">Get started with MediCare in a few steps.</p>
 
             <form onSubmit={handleSubmit}>
-              <Field label="I am registering as">
-                <div className="grid grid-cols-3 gap-2">
-                  {roles.map(({ id, icon: Icon }) => (
-                    <button
-                      type="button"
-                      key={id}
-                      onClick={() => setRole(id)}
-                      className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border text-xs font-medium transition-all ${
-                        role === id
-                          ? "border-primary-500 bg-primary-50 text-primary-700 shadow-soft"
-                          : "border-ink-200 text-ink-500 hover:border-ink-300"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {id}
-                    </button>
-                  ))}
-                </div>
-              </Field>
+              <div className="mb-5 rounded-xl border border-primary-100 bg-primary-50 px-3 py-2 text-xs text-primary-700">
+                Public registration is available for patients only. Doctor, Admin, and Receptionist accounts are created by an Admin.
+              </div>
 
               <Field label="Full Name">
                 <Input icon={User} type="text" placeholder="John Doe" value={form.name} onChange={update("name")} required />
@@ -129,25 +100,16 @@ export default function Register() {
                 <Input icon={Phone} type="tel" placeholder="+92 300 1234567" value={form.phone} onChange={update("phone")} required />
               </Field>
 
-              {roleValue === "PATIENT" && (
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Age"><Input type="number" min="0" placeholder="e.g. 29" value={form.age} onChange={update("age")} required /></Field>
-                  <Field label="Gender">
-                    <Select value={form.gender} onChange={update("gender")}>
-                      <option value="FEMALE">Female</option>
-                      <option value="MALE">Male</option>
-                      <option value="OTHER">Other</option>
-                    </Select>
-                  </Field>
-                </div>
-              )}
-
-              {roleValue === "DOCTOR" && (
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Specialization"><Input placeholder="e.g. Cardiologist" value={form.specialization} onChange={update("specialization")} required /></Field>
-                  <Field label="Experience (yrs)"><Input type="number" min="0" placeholder="e.g. 5" value={form.experienceYears} onChange={update("experienceYears")} required /></Field>
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Age"><Input type="number" min="1" placeholder="e.g. 29" value={form.age} onChange={update("age")} required /></Field>
+                <Field label="Gender">
+                  <Select value={form.gender} onChange={update("gender")}>
+                    <option value="FEMALE">Female</option>
+                    <option value="MALE">Male</option>
+                    <option value="OTHER">Other</option>
+                  </Select>
+                </Field>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Password">

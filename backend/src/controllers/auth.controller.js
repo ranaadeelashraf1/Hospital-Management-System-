@@ -9,7 +9,7 @@ const publicUser = (user) => ({ id: user.id, name: user.name, email: user.email,
 
 // POST /api/auth/register
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password, phone, role, age, gender, specialization, experienceYears } = req.body;
+  const { name, email, password, phone, age, gender } = req.body;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new ApiError(409, "An account with this email already exists.");
@@ -18,28 +18,16 @@ export const register = asyncHandler(async (req, res) => {
 
   const user = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
-      data: { name, email, passwordHash, phone, role },
+      data: { name, email, passwordHash, phone, role: "PATIENT" },
     });
 
-    if (role === "PATIENT") {
-      await tx.patient.create({
-        data: {
-          userId: createdUser.id,
-          age: age ?? 0,
-          gender: gender ?? "OTHER",
-        },
-      });
-    }
-
-    if (role === "DOCTOR") {
-      await tx.doctor.create({
-        data: {
-          userId: createdUser.id,
-          specialization: specialization ?? "General Physician",
-          experienceYears: experienceYears ?? 0,
-        },
-      });
-    }
+    await tx.patient.create({
+      data: {
+        userId: createdUser.id,
+        age: age ?? 0,
+        gender: gender ?? "OTHER",
+      },
+    });
 
     return createdUser;
   });
@@ -56,6 +44,38 @@ export const register = asyncHandler(async (req, res) => {
     success: true,
     message: "Account created successfully.",
     data: { token, user: publicUser(user) },
+  });
+});
+
+// POST /api/auth/admin/users (ADMIN only)
+export const createManagedUser = asyncHandler(async (req, res) => {
+  const { name, email, password, phone, role, specialization, experienceYears } = req.body;
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw new ApiError(409, "An account with this email already exists.");
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const user = await prisma.$transaction(async (tx) => {
+    const createdUser = await tx.user.create({
+      data: { name, email, passwordHash, phone, role },
+    });
+
+    if (role === "DOCTOR") {
+      await tx.doctor.create({
+        data: {
+          userId: createdUser.id,
+          specialization: specialization ?? "General Physician",
+          experienceYears: experienceYears ?? 0,
+        },
+      });
+    }
+
+    return createdUser;
+  });
+
+  res.status(201).json({
+    success: true,
+    message: `${role} account created successfully by admin.`,
+    data: { user: publicUser(user) },
   });
 });
 
