@@ -85,9 +85,9 @@ export default function Login() {
                   <input type="checkbox" className="w-4 h-4 rounded border-ink-300 text-primary-600 focus:ring-primary-500/40" />
                   Remember me
                 </label>
-                <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+                <Link to="/forgot-password" className="text-sm font-medium text-primary-600 hover:text-primary-700">
                   Forgot password?
-                </a>
+                </Link>
               </div>
 
               <Button type="submit" loading={loading} icon={!loading ? ArrowRight : undefined} className="w-full" size="lg">

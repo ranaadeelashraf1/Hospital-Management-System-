@@ -30,6 +30,20 @@ npm run seed      # creates demo Admin / Doctor / Patient accounts
 npm run dev        # starts the API on http://localhost:5000
 ```
 
+For real registration and password-reset emails, also add SMTP credentials to `backend/.env`:
+
+```env
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="your-email@example.com"
+SMTP_PASSWORD="your-gmail-app-password"
+MAIL_FROM="MediCare <your-email@example.com>"
+```
+
+Gmail requires an App Password with 2-step verification enabled. Never commit `.env` or SMTP
+passwords to GitHub.
+
 Demo accounts created by the seed script (password for all: `password123`):
 
 | Role    | Email                          |
@@ -66,5 +80,5 @@ Full frontend details: `frontend/README.md`.
   matching feature yet (dark mode toggle, password-change forms, the notification bell's contents,
   the Reports page charts). These are called out in `frontend/README.md` under "What's connected
   to the real backend" along with what you'd need to add to wire them up.
-- New patients/doctors created by an Admin get a randomly generated temporary password, shown once
-  in a toast notification after creation — there's no "forgot password"/email flow yet.
+- Registration sends a welcome email when SMTP is configured. The login screen's Forgot password
+  link sends a one-hour reset link, and each reset token can only be used once.

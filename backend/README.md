@@ -9,6 +9,7 @@ Role-based (Admin / Doctor / Patient) REST API with JWT authentication.
 - **PostgreSQL** — database
 - **JWT (jsonwebtoken)** — authentication
 - **bcryptjs** — password hashing
+- **Nodemailer + SMTP** — registration and password-reset email delivery
 - **zod** — request validation
 
 ## 1. Prerequisites
@@ -27,13 +28,23 @@ Edit `.env` and set your real values:
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
 JWT_SECRET="a-long-random-string"
 CLIENT_URL="http://localhost:5173"
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="your-email@example.com"
+SMTP_PASSWORD="your-smtp-app-password"
+MAIL_FROM="MediCare <your-email@example.com>"
 ```
+
+For Gmail, enable 2-step verification and create an App Password. Do not use your normal
+Gmail password. Other SMTP providers such as Mailtrap, Resend SMTP, SendGrid, or Brevo work
+with the same variables.
 
 ## 3. Create the database tables
 
 ```bash
 npx prisma generate        # generates the Prisma Client
-npx prisma migrate dev --name init   # creates all 8 tables in your database
+npx prisma migrate dev --name init   # creates all tables, including password_reset_tokens
 ```
 
 > **Note**: this project was scaffolded in a sandboxed environment without internet access to
@@ -99,6 +110,8 @@ Authorization: Bearer <token>
 |--------|---------------------|--------|--------------|
 | POST   | `/api/auth/register` | Public | Create account (role: PATIENT/DOCTOR/RECEPTIONIST) |
 | POST   | `/api/auth/login`    | Public | Returns JWT + user |
+| POST   | `/api/auth/forgot-password` | Public | Emails a one-hour password reset link |
+| POST   | `/api/auth/reset-password` | Public | Sets a new password using a one-time token |
 | GET    | `/api/auth/me`       | Any    | Current logged-in user's profile |
 
 ### Patients

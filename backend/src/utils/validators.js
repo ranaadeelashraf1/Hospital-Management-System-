@@ -18,3 +18,12 @@ export const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
+
+export const emailSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(20, "Invalid or expired reset link"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
