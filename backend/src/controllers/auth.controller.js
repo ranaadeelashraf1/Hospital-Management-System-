@@ -3,7 +3,7 @@ import { prisma } from "../config/db.js";
 import { signToken } from "../utils/jwt.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
 import crypto from "node:crypto";
-import { appUrl, sendEmail } from "../utils/mailer.js";
+import { appUrl, isEmailConfigured, sendEmail } from "../utils/mailer.js";
 
 const publicUser = (user) => ({ id: user.id, name: user.name, email: user.email, role: user.role });
 
@@ -112,12 +112,15 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     });
 
     const resetUrl = appUrl(`/reset-password?token=${rawToken}`);
-    await sendEmail({
-      to: user.email,
-      subject: "Reset your MediCare password",
-      html: `<p>Hi ${user.name},</p><p>Reset your password within one hour:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
-    }).catch((error) => console.error("Password reset email failed:", error.message));
-    if (!process.env.SMTP_HOST) console.info(`Password reset URL for ${user.email}: ${resetUrl}`);
+    if (!isEmailConfigured()) {
+      console.error("Password reset requested but SMTP email delivery is not configured.");
+    } else {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your MediCare password",
+        html: `<p>Hi ${user.name},</p><p>Reset your password within one hour:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
+      }).catch((error) => console.error("Password reset email failed:", error.message));
+    }
   }
 
   res.json({ success: true, message: "If an account exists for this email, a reset link has been sent." });

@@ -13,8 +13,7 @@ const transporter = hasSmtpConfig
 
 export async function sendEmail({ to, subject, html }) {
   if (!transporter) {
-    console.warn(`SMTP is not configured. Email for ${to} was not sent.`);
-    return false;
+    throw new Error("SMTP email delivery is not configured.");
   }
 
   await transporter.sendMail({
@@ -24,6 +23,10 @@ export async function sendEmail({ to, subject, html }) {
     html,
   });
   return true;
+}
+
+export function isEmailConfigured() {
+  return hasSmtpConfig;
 }
 
 export function appUrl(path) {
