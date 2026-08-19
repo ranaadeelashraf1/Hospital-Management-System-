@@ -1,0 +1,187 @@
+// MediCare Hospital Management System — Prisma schema
+// Run `npx prisma generate` after installing, then `npx prisma migrate dev --name init`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ────────────────────────────────
+// Enums
+// ────────────────────────────────
+
+enum Role {
+  ADMIN
+  DOCTOR
+  PATIENT
+  RECEPTIONIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PatientStatus {
+  ADMITTED
+  OUTPATIENT
+  DISCHARGED
+}
+
+enum DoctorStatus {
+  AVAILABLE
+  ON_LEAVE
+  IN_SURGERY
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum BillingStatus {
+  PAID
+  UNPAID
+  PENDING
+}
+
+// ────────────────────────────────
+// Models
+// ────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role
+  phone        String?
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  patient Patient?
+  doctor  Doctor?
+
+  @@map("users")
+}
+
+model Department {
+  id           String  @id @default(uuid())
+  name         String  @unique
+  headDoctorId String? @unique @map("head_doctor_id")
+
+  headDoctor Doctor?    @relation("DepartmentHead", fields: [headDoctorId], references: [id])
+  doctors    Doctor[]   @relation("DoctorDepartment")
+  patients   Patient[]
+
+  @@map("departments")
+}
+
+model Patient {
+  id           String        @id @default(uuid())
+  userId       String        @unique @map("user_id")
+  age          Int
+  gender       Gender
+  bloodGroup   String?       @map("blood_group")
+  address      String?
+  departmentId String?       @map("department_id")
+  status       PatientStatus @default(OUTPATIENT)
+  admittedAt   DateTime?     @map("admitted_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department   Department?    @relation(fields: [departmentId], references: [id])
+  appointments Appointment[]
+  prescriptions Prescription[]
+  billings     Billing[]
+
+  @@map("patients")
+}
+
+model Doctor {
+  id               String       @id @default(uuid())
+  userId           String       @unique @map("user_id")
+  specialization   String
+  experienceYears  Int          @map("experience_years")
+  departmentId     String?      @map("department_id")
+  availability     String?
+  rating           Float        @default(0)
+  status           DoctorStatus @default(AVAILABLE)
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department         Department?    @relation("DoctorDepartment", fields: [departmentId], references: [id])
+  headOfDepartment   Department?    @relation("DepartmentHead")
+  appointments       Appointment[]
+  prescriptions      Prescription[]
+
+  @@map("doctors")
+}
+
+model Appointment {
+  id           String            @id @default(uuid())
+  patientId    String            @map("patient_id")
+  doctorId     String            @map("doctor_id")
+  apptDate     DateTime          @map("appt_date") @db.Date
+  apptTime     String            @map("appt_time")
+  status       AppointmentStatus @default(PENDING)
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  patient      Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor       Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  prescription Prescription?
+  billing      Billing?
+
+  @@map("appointments")
+}
+
+model Prescription {
+  id            String   @id @default(uuid())
+  appointmentId String   @unique @map("appointment_id")
+  patientId     String   @map("patient_id")
+  doctorId      String   @map("doctor_id")
+  diagnosis     String
+  instructions  String?  @db.Text
+  issuedDate    DateTime @default(now()) @map("issued_date") @db.Date
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patient     Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor      @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  medicines   Medicine[]
+
+  @@map("prescriptions")
+}
+
+model Medicine {
+  id             String @id @default(uuid())
+  prescriptionId String @map("prescription_id")
+  name           String
+  dosage         String
+  duration       String
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@map("medicines")
+}
+
+model Billing {
+  id            String        @id @default(uuid())
+  patientId     String        @map("patient_id")
+  appointmentId String?       @unique @map("appointment_id")
+  amount        Decimal       @db.Decimal(10, 2)
+  status        BillingStatus @default(PENDING)
+  invoiceDate   DateTime      @default(now()) @map("invoice_date") @db.Date
+
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@map("billing")
+}
