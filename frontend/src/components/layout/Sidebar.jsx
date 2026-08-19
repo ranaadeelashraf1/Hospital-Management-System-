@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Stethoscope, Building2, CalendarDays,
-  ClipboardList, Receipt, BarChart3, UserCircle, Settings, LogOut,
+  ClipboardList, Receipt, BarChart3, UserCircle, Settings, LogOut, UserPlus,
   ChevronsLeft, X,
 } from "lucide-react";
 import Logo from "../ui/Logo";
@@ -18,11 +18,12 @@ const menu = [
   { to: "/reports", label: "Reports", icon: BarChart3 },
   { to: "/profile", label: "Profile", icon: UserCircle },
   { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/manage-accounts", label: "Manage Accounts", icon: UserPlus, adminOnly: true },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   return (
     <>
       {/* Mobile overlay */}
@@ -49,7 +50,7 @@ export default function Sidebar({ collapsed, setCollapsed, mobileOpen, setMobile
         </div>
 
         <nav className="flex-1 overflow-y-auto scrollbar-thin px-3 py-4 space-y-1">
-          {menu.map((item) => (
+          {menu.filter((item) => !item.adminOnly || user?.role === "ADMIN").map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

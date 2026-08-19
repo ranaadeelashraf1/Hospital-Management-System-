@@ -19,6 +19,7 @@ import Billing from "./pages/Billing";
 import Reports from "./pages/Reports";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import ManageAccounts from "./pages/ManageAccounts";
 import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientAppointments from "./pages/patient/PatientAppointments";
 import PatientPrescriptions from "./pages/patient/PatientPrescriptions";
@@ -68,6 +69,12 @@ export default function App() {
               <Route path="/reports" element={<Reports />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
+            <Route element={<MainLayout />}>
+              <Route path="/manage-accounts" element={<ManageAccounts />} />
             </Route>
           </Route>
 
