@@ -1,12 +1,12 @@
 # MediCare HMS — Backend API
 
-Node.js + Express + Prisma + PostgreSQL backend for the MediCare Hospital Management System.
+Node.js + Express + Prisma + MongoDB backend for the MediCare Hospital Management System.
 Role-based (Admin / Doctor / Patient) REST API with JWT authentication.
 
 ## Tech Stack
 - **Node.js + Express** — server & routing
 - **Prisma ORM** — database access (JavaScript, not TypeScript)
-- **PostgreSQL** — database
+- **MongoDB** — database (MongoDB Atlas or a local replica set)
 - **JWT (jsonwebtoken)** — authentication
 - **bcryptjs** — password hashing
 - **Nodemailer + SMTP** — registration and password-reset email delivery
@@ -14,7 +14,8 @@ Role-based (Admin / Doctor / Patient) REST API with JWT authentication.
 
 ## 1. Prerequisites
 - Node.js 18+
-- A running PostgreSQL database (local install, or free options: [Neon](https://neon.tech), [Supabase](https://supabase.com), [Railway](https://railway.app))
+- A running MongoDB replica set. MongoDB Atlas is the easiest option; Prisma transactions
+  require replica-set mode even for some single-document writes.
 
 ## 2. Setup
 
@@ -25,7 +26,7 @@ cp .env.example .env
 
 Edit `.env` and set your real values:
 ```
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+MONGO_URI="mongodb+srv://USER:PASSWORD@CLUSTER.mongodb.net/medicare_hms"
 JWT_SECRET="a-long-random-string"
 CLIENT_URL="http://localhost:5173"
 SMTP_HOST="smtp.gmail.com"
@@ -44,7 +45,7 @@ with the same variables.
 
 ```bash
 npx prisma generate        # generates the Prisma Client
-npx prisma migrate dev --name init   # creates all tables, including password_reset_tokens
+npx prisma db push                  # creates/updates MongoDB collections and indexes
 ```
 
 > **Note**: this project was scaffolded in a sandboxed environment without internet access to

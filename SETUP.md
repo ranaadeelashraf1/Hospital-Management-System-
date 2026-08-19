@@ -5,7 +5,7 @@ This project has two parts:
 ```
 medicare-hms-fullstack/
 ├── frontend/    React (Vite) + Tailwind CSS — the UI, 3 portals (Admin, Doctor, Patient)
-└── backend/     Node.js + Express + Prisma + PostgreSQL — the REST API
+└── backend/     Node.js + Express + Prisma + MongoDB — the REST API
 ```
 
 The frontend is already wired to call the backend's API (see `frontend/src/api/`). To run the
@@ -19,13 +19,12 @@ npm install
 cp .env.example .env
 ```
 
-Edit `backend/.env` and set a real `DATABASE_URL` (a PostgreSQL connection string). Free options
-if you don't have Postgres locally: [Neon](https://neon.tech), [Supabase](https://supabase.com),
-[Railway](https://railway.app).
+Edit `backend/.env` and set a real `MONGO_URI`. MongoDB Atlas is recommended because Prisma
+transactions require a replica set. A local MongoDB server must also be started in replica-set mode.
 
 ```bash
 npx prisma generate
-npx prisma migrate dev --name init
+npx prisma db push
 npm run seed      # creates demo Admin / Doctor / Patient accounts
 npm run dev        # starts the API on http://localhost:5000
 ```

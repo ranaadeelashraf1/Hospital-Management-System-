@@ -1,16 +1,13 @@
 import "dotenv/config";
 import app from "./src/app.js";
 import { prisma } from "./src/config/db.js";
-import { connectMongo } from "./src/config/mongo.js";
 
 const PORT = process.env.PORT || 5000;
 
 async function start() {
   try {
     await prisma.$connect();
-    console.log("PostgreSQL connected.");
-
-    await connectMongo();
+    console.log("MongoDB connected through Prisma.");
 
     app.listen(PORT, () => {
       console.log(`MediCare API listening on http://localhost:${PORT}`);

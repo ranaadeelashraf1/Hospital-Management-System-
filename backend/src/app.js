@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
 import authRoutes from "./routes/auth.routes.js";
 import patientRoutes from "./routes/patient.routes.js";
 import doctorRoutes from "./routes/doctor.routes.js";
@@ -22,14 +21,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/api/health", (req, res) => {
-  const mongoStatus = mongoose.connection.readyState === 1 ? "connected" : "not_connected";
-
   res.json({
     success: true,
     message: "MediCare API is running.",
     databases: {
-      postgres: "configured",
-      mongo: mongoStatus,
+      database: "mongodb",
     },
   });
 });
