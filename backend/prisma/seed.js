@@ -9,9 +9,16 @@ async function main() {
 
   const password = await bcrypt.hash("password123", 12);
 
-  // ── Departments ──
-  const cardiology = await prisma.department.create({ data: { name: "Cardiology" } });
-  const pediatrics = await prisma.department.create({ data: { name: "Pediatrics" } });
+  // Keep the demo seed repeatable when the database already contains a partial run.
+  await prisma.medicine.deleteMany();
+  await prisma.prescription.deleteMany();
+  await prisma.billing.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.patient.deleteMany();
+  await prisma.doctor.deleteMany();
+  await prisma.passwordResetToken.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.department.deleteMany();
 
   // ── Admin ──
   await prisma.user.create({
@@ -39,13 +46,17 @@ async function main() {
       userId: doctorUser.id,
       specialization: "Cardiologist",
       experienceYears: 14,
-      departmentId: cardiology.id,
       availability: "Mon–Fri, 9am–3pm",
       rating: 4.9,
       status: "AVAILABLE",
     },
   });
-  await prisma.department.update({ where: { id: cardiology.id }, data: { headDoctorId: doctor.id } });
+
+  // MongoDB unique indexes allow only one null headDoctorId, so assign the first
+  // department immediately and leave the second department unassigned.
+  const cardiology = await prisma.department.create({ data: { name: "Cardiology", headDoctorId: doctor.id } });
+  const pediatrics = await prisma.department.create({ data: { name: "Pediatrics" } });
+  await prisma.doctor.update({ where: { id: doctor.id }, data: { departmentId: cardiology.id } });
 
   // ── Patient ──
   const patientUser = await prisma.user.create({
