@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getAppointments,
+  getAppointmentAvailability,
   createAppointment,
   updateAppointmentStatus,
   rescheduleAppointment,
@@ -11,6 +12,7 @@ const router = Router();
 
 router.use(protect);
 
+router.get("/availability", getAppointmentAvailability);
 router.get("/", getAppointments); // scoped per role inside the controller
 router.post("/", authorize("ADMIN", "RECEPTIONIST", "PATIENT"), createAppointment);
 router.put("/:id/status", authorize("ADMIN", "DOCTOR", "PATIENT"), updateAppointmentStatus);

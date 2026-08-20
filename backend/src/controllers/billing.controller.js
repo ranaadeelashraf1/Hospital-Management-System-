@@ -1,5 +1,6 @@
 import { prisma } from "../config/db.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
+import { createNotification } from "../utils/notifications.js";
 
 const billingInclude = {
   patient: { include: { user: { select: { name: true } } } },
@@ -34,6 +35,14 @@ export const createBilling = asyncHandler(async (req, res) => {
     include: billingInclude,
   });
 
+  const patient = await prisma.patient.findUnique({ where: { id: patientId }, select: { userId: true } });
+  await createNotification({
+    userId: patient.userId,
+    type: "BILLING",
+    title: "New invoice generated",
+    detail: `A new invoice of ${amount} has been generated.`,
+  });
+
   res.status(201).json({ success: true, message: "Invoice created.", data: billing });
 });
 
@@ -44,6 +53,13 @@ export const updateBilling = asyncHandler(async (req, res) => {
     where: { id: req.params.id },
     data: { status },
     include: billingInclude,
+  });
+  const patient = await prisma.patient.findUnique({ where: { id: billing.patientId }, select: { userId: true } });
+  await createNotification({
+    userId: patient.userId,
+    type: "BILLING",
+    title: "Invoice status updated",
+    detail: `Your invoice status is now ${status.toLowerCase()}.`,
   });
   res.json({ success: true, message: "Invoice updated.", data: billing });
 });

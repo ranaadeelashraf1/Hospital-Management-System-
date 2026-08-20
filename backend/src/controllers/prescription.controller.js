@@ -1,5 +1,6 @@
 import { prisma } from "../config/db.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
+import { createNotification } from "../utils/notifications.js";
 
 const prescriptionInclude = {
   patient: { include: { user: { select: { name: true } } } },
@@ -58,6 +59,14 @@ export const createPrescription = asyncHandler(async (req, res) => {
       },
     },
     include: prescriptionInclude,
+  });
+
+  const patient = await prisma.patient.findUnique({ where: { id: appointment.patientId }, select: { userId: true } });
+  await createNotification({
+    userId: patient.userId,
+    type: "PRESCRIPTION",
+    title: "New prescription available",
+    detail: `Dr. ${req.user.name} issued a prescription for ${diagnosis}.`,
   });
 
   res.status(201).json({ success: true, message: "Prescription issued.", data: prescription });

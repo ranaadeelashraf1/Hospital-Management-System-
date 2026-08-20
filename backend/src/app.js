@@ -7,13 +7,21 @@ import departmentRoutes from "./routes/department.routes.js";
 import appointmentRoutes from "./routes/appointment.routes.js";
 import prescriptionRoutes from "./routes/prescription.routes.js";
 import billingRoutes from "./routes/billing.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
 
 const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      const configuredOrigin = process.env.CLIENT_URL || "http://localhost:5173";
+      const isLocalDevOrigin = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin || "");
+      if (!origin || origin === configuredOrigin || (process.env.NODE_ENV !== "production" && isLocalDevOrigin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Origin is not allowed by CORS."));
+    },
     credentials: true,
   })
 );
@@ -37,6 +45,7 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/billing", billingRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

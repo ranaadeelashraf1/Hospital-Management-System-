@@ -11,12 +11,14 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [resetUrl, setResetUrl] = useState("");
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     try {
-      await authApi.forgotPassword({ email });
+      const response = await authApi.forgotPassword({ email });
+      setResetUrl(response?.resetUrl || "");
       setSent(true);
     } catch (error) {
       toast.error(error.message);
@@ -30,6 +32,11 @@ export default function ForgotPassword() {
       {sent ? (
         <div className="rounded-xl border border-primary-100 bg-primary-50 p-4 text-sm text-primary-800">
           If an account exists for this email, a reset link has been sent. Check your inbox and spam folder.
+          {resetUrl && (
+            <p className="mt-3 break-all">
+              Local development link: <a className="font-medium underline" href={resetUrl}>{resetUrl}</a>
+            </p>
+          )}
         </div>
       ) : (
         <form onSubmit={handleSubmit}>

@@ -70,6 +70,7 @@ model User {
   patient Patient?
   doctor  Doctor?
   passwordResetTokens PasswordResetToken[]
+  notifications Notification[]
 
   @@map("users")
 }
@@ -85,6 +86,21 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @map("user_id") @db.ObjectId
+  type        String
+  title       String
+  detail      String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
 
 model Department {

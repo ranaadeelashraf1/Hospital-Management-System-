@@ -10,6 +10,7 @@ import { TableSkeleton } from "../components/ui/Skeleton";
 import { appointmentsApi } from "../api/appointments";
 import { doctorsApi } from "../api/doctors";
 import { patientsApi } from "../api/patients";
+import AppointmentSlotSelect from "../components/appointments/AppointmentSlotSelect";
 
 const statusLabel = { PENDING: "Pending", CONFIRMED: "Confirmed", COMPLETED: "Completed", CANCELLED: "Cancelled" };
 
@@ -82,6 +83,7 @@ export default function Appointments() {
   const [bookOpen, setBookOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
+  const [booking, setBooking] = useState({ patientId: "", doctorId: "", date: "", time: "" });
 
   const loadData = async () => {
     setLoading(true);
@@ -108,17 +110,17 @@ export default function Appointments() {
 
   const handleBook = async (e) => {
     e.preventDefault();
-    const form = new FormData(e.target);
     setSaving(true);
     try {
       await appointmentsApi.create({
-        patientId: form.get("patientId"),
-        doctorId: form.get("doctorId"),
-        apptDate: form.get("date"),
-        apptTime: form.get("time"),
+        patientId: booking.patientId,
+        doctorId: booking.doctorId,
+        apptDate: booking.date,
+        apptTime: booking.time,
       });
       toast.success("Appointment booked successfully");
       setBookOpen(false);
+      setBooking({ patientId: "", doctorId: "", date: "", time: "" });
       loadData();
     } catch (err) {
       toast.error(err.message || "Failed to book appointment.");
@@ -229,17 +231,19 @@ export default function Appointments() {
         <form id="book-appt-form" onSubmit={handleBook}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
             <Field label="Patient" className="sm:col-span-2">
-              <Select name="patientId" defaultValue={patients[0]?.id || ""}>
+              <Select name="patientId" value={booking.patientId} onChange={(e) => setBooking({ ...booking, patientId: e.target.value })} required>
+                <option value="">Select a patient</option>
                 {patients.map((p) => <option key={p.id} value={p.id}>{p.user?.name}</option>)}
               </Select>
             </Field>
             <Field label="Doctor" className="sm:col-span-2">
-              <Select name="doctorId" defaultValue={doctors[0]?.id || ""}>
+              <Select name="doctorId" value={booking.doctorId} onChange={(e) => setBooking({ ...booking, doctorId: e.target.value, time: "" })} required>
+                <option value="">Select a doctor</option>
                 {doctors.map((d) => <option key={d.id} value={d.id}>{d.user?.name} — {d.specialization}</option>)}
               </Select>
             </Field>
-            <Field label="Date"><Input name="date" type="date" required /></Field>
-            <Field label="Time"><Input name="time" type="time" required /></Field>
+            <Field label="Date"><Input name="date" type="date" value={booking.date} onChange={(e) => setBooking({ ...booking, date: e.target.value, time: "" })} required /></Field>
+            <Field label="Available 30-minute slot"><AppointmentSlotSelect doctorId={booking.doctorId} date={booking.date} value={booking.time} onChange={(e) => setBooking({ ...booking, time: e.target.value })} /></Field>
           </div>
         </form>
         <div className="flex justify-end gap-3 pt-2">

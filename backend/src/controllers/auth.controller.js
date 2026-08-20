@@ -112,14 +112,27 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     });
 
     const resetUrl = appUrl(`/reset-password?token=${rawToken}`);
+
+    let emailSent = false;
     if (!isEmailConfigured()) {
       console.error("Password reset requested but SMTP email delivery is not configured.");
     } else {
-      await sendEmail({
+      emailSent = await sendEmail({
         to: user.email,
         subject: "Reset your MediCare password",
         html: `<p>Hi ${user.name},</p><p>Reset your password within one hour:</p><p><a href="${resetUrl}">${resetUrl}</a></p><p>If you did not request this, you can ignore this email.</p>`,
-      }).catch((error) => console.error("Password reset email failed:", error.message));
+      }).then(() => true).catch((error) => {
+        console.error("Password reset email failed:", error.message);
+        return false;
+      });
+    }
+
+    if (!emailSent && process.env.NODE_ENV !== "production") {
+      return res.json({
+        success: true,
+        message: "Password reset link generated for local testing. Email delivery is not configured in this environment.",
+        data: { resetUrl },
+      });
     }
   }
 
