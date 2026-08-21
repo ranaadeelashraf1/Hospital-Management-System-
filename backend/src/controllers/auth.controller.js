@@ -7,6 +7,16 @@ import { appUrl, isEmailConfigured, sendEmail } from "../utils/mailer.js";
 
 const publicUser = (user) => ({ id: user.id, name: user.name, email: user.email, role: user.role });
 
+// PUT /api/auth/me
+export const updateMe = asyncHandler(async (req, res) => {
+  const { name, email, phone } = req.body;
+  const user = await prisma.user.update({
+    where: { id: req.user.id },
+    data: { name, email, phone },
+  });
+  res.json({ success: true, message: "Profile updated successfully.", data: publicUser(user) });
+});
+
 // POST /api/auth/register
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, phone, age, gender } = req.body;

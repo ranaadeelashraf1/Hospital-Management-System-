@@ -5,16 +5,24 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Field, Input } from "../components/ui/Input";
 import { useAuth } from "../context/AuthContext";
+import { authApi } from "../api/auth";
 
 export default function Profile() {
   const [editing, setEditing] = useState(false);
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const initials = user?.name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "AD";
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    setEditing(false);
-    toast("Admin profile editing requires a dedicated endpoint — not yet wired.", { icon: "ℹ️" });
+    const form = new FormData(e.target);
+    try {
+      const updated = await authApi.updateMe({ name: form.get("name"), email: form.get("email"), phone: form.get("phone") });
+      updateUser(updated);
+      setEditing(false);
+      toast.success("Profile updated successfully.");
+    } catch (err) {
+      toast.error(err.message || "Failed to update profile.");
+    }
   };
 
   const handlePasswordChange = (e) => {
@@ -54,11 +62,11 @@ export default function Profile() {
           </div>
           <form onSubmit={handleSave}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
-              <Field label="Full Name"><Input defaultValue={user?.name} disabled={!editing} /></Field>
-              <Field label="Email"><Input defaultValue={user?.email} disabled={!editing} /></Field>
-              <Field label="Phone"><Input defaultValue="+92 300 9998877" disabled={!editing} /></Field>
-              <Field label="Department"><Input defaultValue="Administration" disabled={!editing} /></Field>
-              <Field label="Address" className="sm:col-span-2"><Input defaultValue="Lahore, Pakistan" disabled={!editing} /></Field>
+              <Field label="Full Name"><Input name="name" defaultValue={user?.name} disabled={!editing} required /></Field>
+              <Field label="Email"><Input name="email" type="email" defaultValue={user?.email} disabled={!editing} required /></Field>
+              <Field label="Phone"><Input name="phone" defaultValue={user?.phone || ""} disabled={!editing} /></Field>
+              <Field label="Department"><Input defaultValue="Administration" disabled /></Field>
+              <Field label="Address" className="sm:col-span-2"><Input defaultValue="Lahore, Pakistan" disabled /></Field>
             </div>
             {editing && (
               <div className="flex justify-end gap-3 pt-2">
