@@ -22,7 +22,8 @@ export default function DoctorPrescriptions() {
     Promise.all([prescriptionsApi.getAll(), appointmentsApi.getAll()])
       .then(([rx, appts]) => {
         setPrescriptions(rx);
-        setAppointments(appts.filter((a) => a.status !== "CANCELLED"));
+        const prescribedAppointmentIds = new Set(rx.map((prescription) => prescription.appointmentId));
+        setAppointments(appts.filter((a) => a.status !== "CANCELLED" && !prescribedAppointmentIds.has(a.id)));
       })
       .catch((err) => toast.error(err.message || "Failed to load prescriptions."))
       .finally(() => setLoading(false));
@@ -123,7 +124,7 @@ export default function DoctorPrescriptions() {
           <p className="text-sm font-medium text-ink-700 mb-2">Medicines</p>
           <div className="space-y-2 mb-3">
             {medicines.map((m, i) => (
-              <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
+              <div key={i} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
                 <Input placeholder="Medicine name" value={m.name} onChange={(e) => updateMedicine(i, "name", e.target.value)} />
                 <Input placeholder="Dosage" value={m.dosage} onChange={(e) => updateMedicine(i, "dosage", e.target.value)} />
                 <Input placeholder="Duration" value={m.duration} onChange={(e) => updateMedicine(i, "duration", e.target.value)} />

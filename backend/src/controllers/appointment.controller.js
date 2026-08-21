@@ -1,6 +1,6 @@
 import { prisma } from "../config/db.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
-import { notifyUsers } from "../utils/notifications.js";
+import { notifyAdmins, notifyUsers } from "../utils/notifications.js";
 
 const appointmentInclude = {
   patient: { include: { user: { select: { name: true, phone: true } } } },
@@ -108,6 +108,11 @@ export const createAppointment = asyncHandler(async (req, res) => {
     title: "New appointment request",
     detail: `${appointment.patient.user.name} requested an appointment for ${apptDate} at ${apptTime}.`,
   });
+  await notifyAdmins({
+    type: "APPOINTMENT",
+    title: "New appointment request",
+    detail: `${appointment.patient.user.name} requested an appointment for ${apptDate} at ${apptTime}.`,
+  });
 
   res.status(201).json({ success: true, message: "Appointment booked.", data: appointment });
 });
@@ -144,6 +149,11 @@ export const updateAppointmentStatus = asyncHandler(async (req, res) => {
     title: "Appointment status updated",
     detail: `Your appointment status is now ${status.toLowerCase()}.`,
   });
+  await notifyAdmins({
+    type: "APPOINTMENT",
+    title: "Appointment status updated",
+    detail: `An appointment status changed to ${status.toLowerCase()}.`,
+  });
 
   res.json({ success: true, message: "Appointment status updated.", data: updated });
 });
@@ -177,6 +187,11 @@ export const rescheduleAppointment = asyncHandler(async (req, res) => {
     type: "APPOINTMENT",
     title: "Appointment rescheduled",
     detail: `Your appointment moved to ${apptDate} at ${apptTime}.`,
+  });
+  await notifyAdmins({
+    type: "APPOINTMENT",
+    title: "Appointment rescheduled",
+    detail: `An appointment moved to ${apptDate} at ${apptTime}.`,
   });
 
   res.json({ success: true, message: "Appointment rescheduled.", data: updated });

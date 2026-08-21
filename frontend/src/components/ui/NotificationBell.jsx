@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import toast from "react-hot-toast";
@@ -18,6 +18,18 @@ function formatTime(value) {
 export default function NotificationBell() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const notificationRef = useRef(null);
+
+  useEffect(() => {
+    if (!notifOpen) return undefined;
+
+    const closeOnOutsideClick = (event) => {
+      if (!notificationRef.current?.contains(event.target)) setNotifOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    return () => document.removeEventListener("pointerdown", closeOnOutsideClick);
+  }, [notifOpen]);
 
   useEffect(() => {
     let active = true;
@@ -56,7 +68,7 @@ export default function NotificationBell() {
   };
 
   return (
-    <div className="relative">
+    <div ref={notificationRef} className="relative">
       <button
         onClick={() => setNotifOpen((value) => !value)}
         className="relative p-2.5 rounded-xl text-ink-500 hover:bg-ink-100 transition-colors"

@@ -6,8 +6,8 @@ const router = Router();
 
 router.use(protect);
 
-router.get("/", authorize("ADMIN", "PATIENT"), getBillings);
-router.post("/", authorize("ADMIN"), createBilling);
-router.put("/:id", authorize("ADMIN"), updateBilling);
+router.get("/", authorize("ADMIN", "RECEPTIONIST", "PATIENT"), getBillings);
+router.post("/", authorize("ADMIN", "RECEPTIONIST"), createBilling);
+router.put("/:id", authorize("ADMIN", "RECEPTIONIST"), updateBilling);
 
 export default router;

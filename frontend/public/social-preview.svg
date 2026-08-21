@@ -1,0 +1,22 @@
+<svg width="1040" height="547" viewBox="0 0 1040 547" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1040" height="547" fill="#F0FDFA"/>
+  <path d="M0 0H1040V547H0V0Z" fill="url(#background)"/>
+  <circle cx="1080" cy="80" r="260" fill="#CCFBF1" fill-opacity="0.7"/>
+  <circle cx="1120" cy="560" r="220" fill="#99F6E4" fill-opacity="0.45"/>
+  <rect x="92" y="110" width="118" height="118" rx="30" fill="url(#mark)"/>
+  <path d="M112 169H141L151 142L163 196L175 169H190" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="92" y="314" fill="#123333" font-family="Georgia, serif" font-size="72" font-weight="700">MediCare</text>
+  <text x="96" y="366" fill="#0F766E" font-family="Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="5">HOSPITAL MANAGEMENT SYSTEM</text>
+  <text x="96" y="450" fill="#456363" font-family="Arial, sans-serif" font-size="28">Connected care. Clear records. Better outcomes.</text>
+  <path d="M96 500H510" stroke="#14B8A6" stroke-width="5" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="background" x1="70" y1="40" x2="1120" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0FDFA"/>
+      <stop offset="1" stop-color="#ECFEFF"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="92" y1="110" x2="210" y2="228" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F766E"/>
+      <stop offset="1" stop-color="#0E7490"/>
+    </linearGradient>
+  </defs>
+</svg>

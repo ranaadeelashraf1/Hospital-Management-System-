@@ -52,11 +52,48 @@ async function main() {
     },
   });
 
+  const additionalDoctors = [
+    { name: "Dr. Sara Khan", email: "doctor2@medicare.hospital", specialization: "Neurologist", experienceYears: 8 },
+    { name: "Dr. Hamza Ali", email: "doctor3@medicare.hospital", specialization: "Orthopedic Surgeon", experienceYears: 10 },
+    { name: "Dr. Hina Malik", email: "doctor4@medicare.hospital", specialization: "Dermatologist", experienceYears: 7 },
+    { name: "Dr. Usman Raza", email: "doctor5@medicare.hospital", specialization: "General Physician", experienceYears: 6 },
+  ];
+  const additionalDoctorRecords = [];
+
+  for (const doctorData of additionalDoctors) {
+    const user = await prisma.user.create({
+      data: {
+        name: doctorData.name,
+        email: doctorData.email,
+        passwordHash: password,
+        role: "DOCTOR",
+      },
+    });
+    const doctorRecord = await prisma.doctor.create({
+      data: {
+        userId: user.id,
+        specialization: doctorData.specialization,
+        experienceYears: doctorData.experienceYears,
+        availability: "Mon–Fri, 9am–3pm",
+        rating: 4.5,
+        status: "AVAILABLE",
+      },
+    });
+    additionalDoctorRecords.push(doctorRecord);
+  }
+
   // MongoDB unique indexes allow only one null headDoctorId, so assign the first
-  // department immediately and leave the second department unassigned.
+  // department immediately and give each extra department a unique head doctor.
   const cardiology = await prisma.department.create({ data: { name: "Cardiology", headDoctorId: doctor.id } });
   const pediatrics = await prisma.department.create({ data: { name: "Pediatrics" } });
+  const neurology = await prisma.department.create({ data: { name: "Neurology", headDoctorId: additionalDoctorRecords[0].id } });
+  const orthopedics = await prisma.department.create({ data: { name: "Orthopedics", headDoctorId: additionalDoctorRecords[1].id } });
+  const dermatology = await prisma.department.create({ data: { name: "Dermatology", headDoctorId: additionalDoctorRecords[2].id } });
   await prisma.doctor.update({ where: { id: doctor.id }, data: { departmentId: cardiology.id } });
+  await prisma.doctor.update({ where: { id: additionalDoctorRecords[0].id }, data: { departmentId: neurology.id } });
+  await prisma.doctor.update({ where: { id: additionalDoctorRecords[1].id }, data: { departmentId: orthopedics.id } });
+  await prisma.doctor.update({ where: { id: additionalDoctorRecords[2].id }, data: { departmentId: dermatology.id } });
+  await prisma.doctor.update({ where: { id: additionalDoctorRecords[3].id }, data: { departmentId: pediatrics.id } });
 
   // ── Patient ──
   const patientUser = await prisma.user.create({
@@ -121,6 +158,10 @@ async function main() {
   console.log("Seed complete. Demo accounts (all use password: password123):");
   console.log("  Admin:   admin@medicare.hospital");
   console.log("  Doctor:  doctor@medicare.hospital");
+  console.log("  Doctor2: doctor2@medicare.hospital");
+  console.log("  Doctor3: doctor3@medicare.hospital");
+  console.log("  Doctor4: doctor4@medicare.hospital");
+  console.log("  Doctor5: doctor5@medicare.hospital");
   console.log("  Patient: patient@medicare.hospital");
 }
 

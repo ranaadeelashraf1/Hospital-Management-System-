@@ -15,7 +15,7 @@ router.use(protect);
 router.get("/availability", getAppointmentAvailability);
 router.get("/", getAppointments); // scoped per role inside the controller
 router.post("/", authorize("ADMIN", "RECEPTIONIST", "PATIENT"), createAppointment);
-router.put("/:id/status", authorize("ADMIN", "DOCTOR", "PATIENT"), updateAppointmentStatus);
-router.put("/:id/reschedule", authorize("ADMIN", "DOCTOR", "PATIENT"), rescheduleAppointment);
+router.put("/:id/status", authorize("ADMIN", "RECEPTIONIST", "DOCTOR", "PATIENT"), updateAppointmentStatus);
+router.put("/:id/reschedule", authorize("ADMIN", "RECEPTIONIST", "DOCTOR", "PATIENT"), rescheduleAppointment);
 
 export default router;

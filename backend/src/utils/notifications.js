@@ -25,3 +25,11 @@ export async function createNotification({ userId, type, title, detail }) {
 export async function notifyUsers(userIds, payload) {
   await Promise.all([...new Set(userIds.filter(Boolean))].map((userId) => createNotification({ userId, ...payload })));
 }
+
+export async function notifyAdmins(payload) {
+  const admins = await prisma.user.findMany({
+    where: { role: "ADMIN" },
+    select: { id: true },
+  });
+  await notifyUsers(admins.map(({ id }) => id), payload);
+}

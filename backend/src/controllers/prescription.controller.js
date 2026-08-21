@@ -1,6 +1,7 @@
 import { prisma } from "../config/db.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
 import { createNotification } from "../utils/notifications.js";
+import { notifyAdmins } from "../utils/notifications.js";
 
 const prescriptionInclude = {
   patient: { include: { user: { select: { name: true } } } },
@@ -46,6 +47,8 @@ export const createPrescription = asyncHandler(async (req, res) => {
   if (appointment.doctorId !== doctor.id) {
     throw new ApiError(403, "You can only write prescriptions for your own appointments.");
   }
+  const existingPrescription = await prisma.prescription.findUnique({ where: { appointmentId } });
+  if (existingPrescription) throw new ApiError(409, "This appointment already has a prescription.");
 
   const prescription = await prisma.prescription.create({
     data: {
@@ -67,6 +70,11 @@ export const createPrescription = asyncHandler(async (req, res) => {
     type: "PRESCRIPTION",
     title: "New prescription available",
     detail: `Dr. ${req.user.name} issued a prescription for ${diagnosis}.`,
+  });
+  await notifyAdmins({
+    type: "PRESCRIPTION",
+    title: "New prescription available",
+    detail: `Dr. ${req.user.name} issued a prescription for a patient.`,
   });
 
   res.status(201).json({ success: true, message: "Prescription issued.", data: prescription });

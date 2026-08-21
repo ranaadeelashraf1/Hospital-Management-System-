@@ -1,6 +1,7 @@
 import { prisma } from "../config/db.js";
 import { asyncHandler, ApiError } from "../utils/asyncHandler.js";
 import { createNotification } from "../utils/notifications.js";
+import { notifyAdmins } from "../utils/notifications.js";
 
 const billingInclude = {
   patient: { include: { user: { select: { name: true } } } },
@@ -42,6 +43,11 @@ export const createBilling = asyncHandler(async (req, res) => {
     title: "New invoice generated",
     detail: `A new invoice of ${amount} has been generated.`,
   });
+  await notifyAdmins({
+    type: "BILLING",
+    title: "New invoice generated",
+    detail: `A new invoice of ${amount} has been generated for a patient.`,
+  });
 
   res.status(201).json({ success: true, message: "Invoice created.", data: billing });
 });
@@ -60,6 +66,11 @@ export const updateBilling = asyncHandler(async (req, res) => {
     type: "BILLING",
     title: "Invoice status updated",
     detail: `Your invoice status is now ${status.toLowerCase()}.`,
+  });
+  await notifyAdmins({
+    type: "BILLING",
+    title: "Invoice status updated",
+    detail: `An invoice status changed to ${status.toLowerCase()}.`,
   });
   res.json({ success: true, message: "Invoice updated.", data: billing });
 });

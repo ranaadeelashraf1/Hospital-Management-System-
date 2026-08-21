@@ -5,7 +5,8 @@ export function errorHandler(err, req, res, next) {
   // Prisma unique constraint violation
   if (err.code === "P2002") {
     statusCode = 409;
-    message = `A record with this ${err.meta?.target?.join(", ") || "value"} already exists.`;
+    const target = Array.isArray(err.meta?.target) ? err.meta.target.join(", ") : err.meta?.target || "value";
+    message = `A record with this ${target} already exists.`;
   }
 
   // Prisma record not found
