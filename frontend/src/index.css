@@ -64,6 +64,10 @@
   ::selection {
     @apply bg-primary-200 text-primary-900;
   }
+  :focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+  }
 }
 
 @layer utilities {
@@ -102,4 +106,15 @@
 }
 .animate-fade-up {
   animation: fade-up 0.35s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
