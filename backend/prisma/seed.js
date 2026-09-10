@@ -31,6 +31,17 @@ async function main() {
     },
   });
 
+  // ── Receptionist ──
+  await prisma.user.create({
+    data: {
+      name: "MediCare Receptionist",
+      email: "receptionist@medicare.hospital",
+      passwordHash: password,
+      role: "RECEPTIONIST",
+      phone: "+92 300 9998878",
+    },
+  });
+
   // ── Doctor ──
   const doctorUser = await prisma.user.create({
     data: {
@@ -157,6 +168,7 @@ async function main() {
 
   console.log("Seed complete. Demo accounts (all use password: password123):");
   console.log("  Admin:   admin@medicare.hospital");
+  console.log("  Receptionist: receptionist@medicare.hospital");
   console.log("  Doctor:  doctor@medicare.hospital");
   console.log("  Doctor2: doctor2@medicare.hospital");
   console.log("  Doctor3: doctor3@medicare.hospital");
