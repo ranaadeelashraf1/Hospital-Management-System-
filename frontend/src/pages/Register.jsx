@@ -6,10 +6,13 @@ import toast from "react-hot-toast";
 import Logo from "../components/ui/Logo";
 import { Field, Input, Select } from "../components/ui/Input";
 import Button from "../components/ui/Button";
-import { useAuth, roleHome } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
+import { authApi } from "../api/auth";
 
 export default function Register() {
   const [loading, setLoading] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [resending, setResending] = useState(false);
   const [form, setForm] = useState({
     name: "", email: "", phone: "", password: "", confirmPassword: "", age: "", gender: "FEMALE",
   });
@@ -34,13 +37,25 @@ export default function Register() {
         age: Number(form.age),
         gender: form.gender,
       };
-      const newUser = await register(payload);
-      toast.success("Account created successfully!");
-      navigate(roleHome[newUser.role] || "/login");
+      await register(payload);
+      setRegisteredEmail(form.email);
+      toast.success("Check your email to verify your account.");
     } catch (err) {
       toast.error(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    setResending(true);
+    try {
+      await authApi.resendVerification({ email: registeredEmail });
+      toast.success("A new verification link has been sent.");
+    } catch (err) {
+      toast.error(err.message || "Could not resend verification email.");
+    } finally {
+      setResending(false);
     }
   };
 
@@ -80,10 +95,27 @@ export default function Register() {
           <Logo className="mb-8" />
 
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-            <h2 className="text-2xl font-display font-bold text-ink-900">Create your account</h2>
-            <p className="text-ink-500 text-sm mt-1.5 mb-6">Get started with MediCare in a few steps.</p>
+            <h2 className="text-2xl font-display font-bold text-ink-900">
+              {registeredEmail ? "Check your email" : "Create your account"}
+            </h2>
+            <p className="text-ink-500 text-sm mt-1.5 mb-6">
+              {registeredEmail
+                ? `We sent a verification link to ${registeredEmail}. Verify it before signing in.`
+                : "Get started with MediCare in a few steps."}
+            </p>
 
-            <form onSubmit={handleSubmit}>
+            {registeredEmail ? (
+              <div className="space-y-3">
+                <Button type="button" className="w-full" size="lg" onClick={() => navigate("/login")}>
+                  Go to Sign In
+                </Button>
+                <Button type="button" variant="outline" className="w-full" onClick={resend} loading={resending}>
+                  Resend verification email
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit}>
+
               <div className="mb-5 rounded-xl border border-primary-100 bg-primary-50 px-3 py-2 text-xs text-primary-700">
                 Public registration is available for patients only. Doctor, Admin, and Receptionist accounts are created by an Admin.
               </div>
@@ -123,7 +155,8 @@ export default function Register() {
               <Button type="submit" loading={loading} icon={!loading ? ArrowRight : undefined} className="w-full mt-2" size="lg">
                 {loading ? "Creating account…" : "Register"}
               </Button>
-            </form>
+              </form>
+            )}
 
             <p className="text-center text-sm text-ink-500 mt-6">
               Already have an account?{" "}

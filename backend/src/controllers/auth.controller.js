@@ -6,6 +6,22 @@ import crypto from "node:crypto";
 import { appUrl, isEmailConfigured, sendEmail } from "../utils/mailer.js";
 
 const publicUser = (user) => ({ id: user.id, name: user.name, email: user.email, role: user.role });
+const VERIFICATION_TOKEN_TTL = 24 * 60 * 60 * 1000;
+
+function createVerificationToken() {
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  return { rawToken, tokenHash, expiresAt: new Date(Date.now() + VERIFICATION_TOKEN_TTL) };
+}
+
+async function sendVerificationEmail(user, rawToken) {
+  const verificationUrl = appUrl(`/verify-email?token=${rawToken}`);
+  await sendEmail({
+    to: user.email,
+    subject: "Verify your MediCare email",
+    html: `<p>Hi ${user.name},</p><p>Please verify your email address to activate your MediCare account:</p><p><a href="${verificationUrl}">${verificationUrl}</a></p><p>This link expires in 24 hours.</p>`,
+  });
+}
 
 // PUT /api/auth/me
 export const updateMe = asyncHandler(async (req, res) => {
@@ -28,7 +44,7 @@ export const register = asyncHandler(async (req, res) => {
 
   const user = await prisma.$transaction(async (tx) => {
     const createdUser = await tx.user.create({
-      data: { name, email, passwordHash, phone, role: "PATIENT" },
+      data: { name, email, passwordHash, phone, role: "PATIENT", emailVerified: false },
     });
 
     await tx.patient.create({
@@ -42,18 +58,20 @@ export const register = asyncHandler(async (req, res) => {
     return createdUser;
   });
 
-  const token = signToken({ id: user.id, role: user.role });
+  const verification = createVerificationToken();
+  await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
+  await prisma.emailVerificationToken.create({
+    data: { userId: user.id, tokenHash: verification.tokenHash, expiresAt: verification.expiresAt },
+  });
 
-  await sendEmail({
-    to: user.email,
-    subject: "Welcome to MediCare",
-    html: `<p>Hi ${user.name},</p><p>Your MediCare account has been created successfully. You can now sign in and use your portal.</p>`,
-  }).catch((error) => console.error("Welcome email failed:", error.message));
+  await sendVerificationEmail(user, verification.rawToken).catch((error) => {
+    console.error("Verification email failed:", error.message);
+  });
 
   res.status(201).json({
     success: true,
-    message: "Account created successfully.",
-    data: { token, user: publicUser(user) },
+    message: "Account created. Check your email to verify your account before signing in.",
+    data: { user: publicUser(user) },
   });
 });
 
@@ -98,6 +116,7 @@ export const login = asyncHandler(async (req, res) => {
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) throw new ApiError(401, "Invalid email or password.");
+  if (user.emailVerified === false) throw new ApiError(403, "Please verify your email before signing in.");
 
   const token = signToken({ id: user.id, role: user.role });
 
@@ -106,6 +125,48 @@ export const login = asyncHandler(async (req, res) => {
     message: "Logged in successfully.",
     data: { token, user: publicUser(user) },
   });
+});
+
+// GET /api/auth/verify-email?token=...
+export const verifyEmail = asyncHandler(async (req, res) => {
+  const { token } = req.query;
+  if (!token || typeof token !== "string") throw new ApiError(400, "Invalid or expired verification link.");
+
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const verificationToken = await prisma.emailVerificationToken.findUnique({ where: { tokenHash } });
+  if (!verificationToken || verificationToken.expiresAt < new Date()) {
+    throw new ApiError(400, "This verification link is invalid or expired.");
+  }
+
+  await prisma.$transaction([
+    prisma.user.update({ where: { id: verificationToken.userId }, data: { emailVerified: true, emailVerifiedAt: new Date() } }),
+    prisma.emailVerificationToken.delete({ where: { id: verificationToken.id } }),
+  ]);
+
+  res.json({
+    success: true,
+    message: "Email verified successfully. You can now sign in.",
+    data: { message: "Email verified successfully. You can now sign in." },
+  });
+});
+
+// POST /api/auth/resend-verification
+export const resendVerification = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (user && !user.emailVerified) {
+    const verification = createVerificationToken();
+    await prisma.emailVerificationToken.deleteMany({ where: { userId: user.id } });
+    await prisma.emailVerificationToken.create({
+      data: { userId: user.id, tokenHash: verification.tokenHash, expiresAt: verification.expiresAt },
+    });
+    await sendVerificationEmail(user, verification.rawToken).catch((error) => {
+      console.error("Verification email failed:", error.message);
+    });
+  }
+
+  res.json({ success: true, message: "If an unverified account exists for this email, a verification link has been sent." });
 });
 
 // POST /api/auth/forgot-password
